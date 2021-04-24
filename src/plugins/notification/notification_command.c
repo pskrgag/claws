@@ -41,15 +41,30 @@ static NotificationCommand command;
 
 G_LOCK_DEFINE_STATIC(command);
 
+static inline size_t get_full_command_size(MsgInfo *msginfo)
+{
+  size_t full_size = 0;
+
+  full_size += strlen(notify_config.command_line);
+  full_size += 5; /* From: */
+  full_size += 9; /* Subject: */
+  full_size += strlen(msginfo->from);
+  full_size += strlen(msginfo->subject);
+  full_size += 8; /* "s and spaces */
+  full_size++; /* NULL byte */
+
+  return full_size;
+}
+
 void notification_command_msg(MsgInfo *msginfo)
 {
   gchar *ret_str, *buf;
   gsize by_read = 0, by_written = 0;
 
-  if(!msginfo || !notify_config.command_enabled || !MSG_IS_NEW(msginfo->flags))
+  if(!msginfo || !notify_config.command_enabled)
     return;
 
-  if(!notify_config.command_enabled || !MSG_IS_NEW(msginfo->flags))
+  if(!notify_config.command_enabled)
     return;
 
   if(notify_config.command_folder_specific) {
@@ -82,7 +97,8 @@ void notification_command_msg(MsgInfo *msginfo)
       return;
   } /* folder specific */
 
-  buf = g_strdup(notify_config.command_line);
+  buf = g_malloc0(get_full_command_size(msginfo));
+  sprintf(buf, "%s \"From: %s\" \"Subject: %s\"", notify_config.command_line, msginfo->from, msginfo->subject);
 
   G_LOCK(command);
 

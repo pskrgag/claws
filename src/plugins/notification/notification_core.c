@@ -297,7 +297,8 @@ gboolean notification_notified_hash_msginfo_update(MsgInfoUpdate *msg_update)
   g_return_val_if_fail(msg_update != NULL, FALSE);
 
   if((msg_update->flags & MSGINFO_UPDATE_FLAGS) &&
-     !MSG_IS_NEW(msg_update->msginfo->flags)) {
+     !MSG_IS_NEW(msg_update->msginfo->flags) &&
+     !MSG_IS_UNREAD(msg_update->msginfo->flags)) {
 
     MsgInfo *msg;
     gchar *msgid;
@@ -351,15 +352,15 @@ static gboolean notification_traverse_hash_startup(GNode *node, gpointer data)
   FolderItem *item = (FolderItem*) node->data;
   gint new_msgs_left;
 
-  if(!(item->new_msgs))
+  if(!(item->new_msgs + item->unread_msgs))
     return FALSE;
 
-  new_msgs_left = item->new_msgs;
+  new_msgs_left = item->new_msgs + item->unread_msgs;
   msg_list = folder_item_get_msg_list(item);
 
   for(walk = msg_list; walk; walk = g_slist_next(walk)) {
     MsgInfo *msg = (MsgInfo*) walk->data;
-    if(MSG_IS_NEW(msg->flags)) {
+    if(MSG_IS_NEW(msg->flags) || MSG_IS_UNREAD(msg->flags)) {
       gchar *msgid;
 
       if(msg->msgid)
@@ -409,7 +410,7 @@ void notification_new_unnotified_msgs(FolderItemUpdateData *update_data)
     MsgInfo *msg;
     msg = (MsgInfo*) walk->data;
 
-    if(MSG_IS_NEW(msg->flags)) {
+    if(MSG_IS_NEW(msg->flags) || MSG_IS_UNREAD(msg->flags)) {
       gchar *msgid;
 
       if(msg->msgid)

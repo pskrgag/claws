@@ -1334,6 +1334,14 @@ static void notify_create_command_page(PrefsPage *page, GtkWindow *window,
 	gtk_widget_show(vbox);
 	command_page.command_cont_enable = vbox;
 
+	hbox = gtk_hbox_new(FALSE, 10);
+	label = gtk_label_new(_("2 command line arguments will be passed to"
+				" command: \"From [sender]\" \"Subject [subject]\""));
+	gtk_widget_show(label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+	gtk_widget_show(hbox);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+
 	/* entry field for command to execute */
 	hbox = gtk_hbox_new(FALSE, 10);
 	label = gtk_label_new(_("Command to execute"));
